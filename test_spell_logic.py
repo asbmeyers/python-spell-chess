@@ -641,6 +641,128 @@ class TestKingMovement:
 class TestCastling:
     """Kings and rooks should be able to castle following standard chess castling rules"""
 
+    def _clear_between_kingside(self, game, color):
+        if color == chess.WHITE:
+            game.board.remove_piece_at(chess.F1)
+            game.board.remove_piece_at(chess.G1)
+        else:
+            game.board.remove_piece_at(chess.F8)
+            game.board.remove_piece_at(chess.G8)
+
+    def _clear_between_queenside(self, game, color):
+        if color == chess.WHITE:
+            game.board.remove_piece_at(chess.B1)
+            game.board.remove_piece_at(chess.C1)
+            game.board.remove_piece_at(chess.D1)
+        else:
+            game.board.remove_piece_at(chess.B8)
+            game.board.remove_piece_at(chess.C8)
+            game.board.remove_piece_at(chess.D8)
+
+    def _set_board(self, game, fen):
+        game.board = chess.Board(fen)
+
+    def test_white_kingside_castle(self):
+        game = SpellChessGame()
+        self._clear_between_kingside(game, chess.WHITE)
+
+        result = game.make_move(chess.E1, chess.G1)
+
+        assert result
+        assert game.board.piece_at(chess.G1) == chess.Piece(chess.KING, chess.WHITE)
+        assert game.board.piece_at(chess.F1) == chess.Piece(chess.ROOK, chess.WHITE)
+        assert game.board.piece_at(chess.E1) is None
+        assert game.board.piece_at(chess.H1) is None
+
+    def test_black_kingside_castle(self):
+        game = SpellChessGame()
+        game.board.turn = chess.BLACK
+        self._clear_between_kingside(game, chess.BLACK)
+
+        result = game.make_move(chess.E8, chess.G8)
+
+        assert result
+        assert game.board.piece_at(chess.G8) == chess.Piece(chess.KING, chess.BLACK)
+        assert game.board.piece_at(chess.F8) == chess.Piece(chess.ROOK, chess.BLACK)
+        assert game.board.piece_at(chess.E8) is None
+        assert game.board.piece_at(chess.H8) is None
+
+    def test_white_queenside_castle(self):
+        game = SpellChessGame()
+        self._clear_between_queenside(game, chess.WHITE)
+
+        result = game.make_move(chess.E1, chess.C1)
+
+        assert result
+        assert game.board.piece_at(chess.C1) == chess.Piece(chess.KING, chess.WHITE)
+        assert game.board.piece_at(chess.D1) == chess.Piece(chess.ROOK, chess.WHITE)
+        assert game.board.piece_at(chess.E1) is None
+        assert game.board.piece_at(chess.A1) is None
+
+    def test_black_queenside_castle(self):
+        game = SpellChessGame()
+        game.board.turn = chess.BLACK
+        self._clear_between_queenside(game, chess.BLACK)
+
+        result = game.make_move(chess.E8, chess.C8)
+
+        assert result
+        assert game.board.piece_at(chess.C8) == chess.Piece(chess.KING, chess.BLACK)
+        assert game.board.piece_at(chess.D8) == chess.Piece(chess.ROOK, chess.BLACK)
+        assert game.board.piece_at(chess.E8) is None
+        assert game.board.piece_at(chess.A8) is None
+
+    def test_kingside_castle_blocked(self):
+        game = SpellChessGame()
+        assert not game.make_move(chess.E1, chess.G1)
+
+    def test_queenside_castle_blocked(self):
+        game = SpellChessGame()
+        assert not game.make_move(chess.E1, chess.C1)
+
+    def test_cannot_castle_after_king_moves(self):
+        game = SpellChessGame()
+        self._clear_between_kingside(game, chess.WHITE)
+
+        assert game.make_move(chess.E1, chess.F1)
+        assert game.make_move(chess.E7, chess.E6)
+        assert game.make_move(chess.F1, chess.E1)
+        assert game.make_move(chess.E6, chess.E5)
+
+        assert not game.make_move(chess.E1, chess.G1)
+    def test_cannot_castle_after_kingside_rook_moves(self):
+        game = SpellChessGame()
+        self._clear_between_kingside(game, chess.WHITE)
+
+        assert game.make_move(chess.H1, chess.G1)
+        assert game.make_move(chess.E7, chess.E6)
+        assert game.make_move(chess.G1, chess.H1)
+        assert game.make_move(chess.E6, chess.E5)
+
+        assert not game.make_move(chess.E1, chess.G1)
+
+
+    def test_cannot_castle_through_check(self):
+        game = SpellChessGame()
+        self._set_board(game, "k4r2/8/8/8/8/8/8/4K2R w K - 0 1")
+
+        move = chess.Move(chess.E1, chess.G1)
+        assert move not in game.board.legal_moves
+
+    def test_cannot_castle_while_in_check(self):
+        game = SpellChessGame()
+        self._set_board(game, "k3r3/8/8/8/8/8/8/4K2R w K - 0 1")
+
+        move = chess.Move(chess.E1, chess.G1)
+        assert move not in game.board.legal_moves
+
+    def test_cannot_castle_into_check(self):
+        game = SpellChessGame()
+        self._set_board(game, "k5r1/8/8/8/8/8/8/4K2R w K - 0 1")
+
+        move = chess.Move(chess.E1, chess.G1)
+        assert move not in game.board.legal_moves
+
 class TestJumpCastLimit:
     """The Jump spell should only be able to be cast once per turn"""
 

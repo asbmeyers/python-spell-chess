@@ -236,7 +236,6 @@ class SpellChessGame:
                     self.freeze_effect_squares = set()
                     self.freeze_effect_plies_left = 0
         self.on_turn_start()
-        self.board.turn = not self.board.turn
 
     # ----- making moves -----
 
@@ -268,6 +267,8 @@ class SpellChessGame:
         to_sq: chess.Square,
         promotion: int = chess.QUEEN,
     ) -> bool:
+        
+        
         """
         Try to make a move. Returns ``True`` if the move was legal
         and has been pushed, ``False`` otherwise.
