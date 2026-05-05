@@ -217,7 +217,7 @@ class TestCheckRules:
         game = SpellChessGame()
         game.board.remove_piece_at(chess.E2)
         game.board.remove_piece_at(chess.G7)
-        game.board.remove_piece_at(chess.E1)
+        game.board.remove_piece_at(chess.F7)
         #Have to manually set up fool's mate because make move doesn't wrok
         assert game.make_move(chess.D1,chess.H5) == True
         assert game.is_game_over() == True
